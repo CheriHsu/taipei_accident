@@ -1,3 +1,5 @@
+<!-- Author Cheri Hsu on 2019.01 -->
+<!-- Data from Taipei City 2014-2017 -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -196,7 +198,7 @@
         <!-- vehicle collisions -->
         <h1>台北市交通事故統計<br>Traffic Accidents in Taipei City</h1>
         <p>Data: <a href='https://data.gov.tw/dataset/73925'>
-            Vehicles collision injuries and deaths交通事故資料來源</a> ,<br>2016
+            Vehicles collision injuries and deaths交通事故資料來源</a> ,<br>2017
         </p>
 
         <!-- menu -->
@@ -231,7 +233,7 @@
     </div>
 
 	<section class="right_section">
-        <span>2014-2016 Traffic accident rate<br>交通事故率</span>
+        <span>2014-2017 Traffic accident rate<br>交通事故率</span>
 
         <p style="text-align: left;">年度受傷人數</p>
 		<canvas class="style1" id="injured"></canvas>
@@ -443,7 +445,7 @@
                         pie_option = {
                             // backgroundColor: '#2c343c',
                             title: {
-                                text: '2016年 事故道路型態比例',
+                                text: '2017年 事故道路型態比例',
                                 right: 80,
                                 textStyle:{
                                     fontSize: 14,
@@ -676,7 +678,7 @@
 		    type: 'line',
 
 		    data: {
-		        labels: ["2013", "2014", "2015", "2016"],
+		        labels: ["2014", "2015", "2016", "2017"],
 		        datasets: [{
 		            label: "受傷人數",
 		            backgroundColor: 'rgb(80,193,233)',
@@ -711,7 +713,7 @@
 		    type: 'line',
 
 		    data: {
-		        labels: ["2013", "2014", "2015", "2016"],
+		        labels: ["2014", "2015", "2016", "2017"],
 		        datasets: [{
 		            label: "死亡人數",
 		            backgroundColor: 'rgb(255, 99, 132)',
