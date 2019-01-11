@@ -1,0 +1,143 @@
+<!-- Author Cheri Hsu on 2019.01 -->
+<!-- Data from Taipei City 2016 -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Display buildings in 3D</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+
+    <!-- search input -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.min.js'></script>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.3.0/mapbox-gl-geocoder.css' type='text/css' />
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<div id='geocoder' class='geocoder'></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiY2hlcmloc3UiLCJhIjoiY2puemxzM2M4MTBoMTNrcXB2OW53bTZlYyJ9.dGOT6ydOwADgu2qMaCQWTw';
+var map = new mapboxgl.Map({
+    style: 'mapbox://styles/mapbox/light-v9',
+    center: [121.602152, 25.048374],
+    zoom: 15.5,// zoom: 2 // starting zoom
+    pitch: 45,
+    bearing: -17.6,
+    container: 'map'
+});
+
+// The 'building' layer in the mapbox-streets vector source contains building-height
+// data from OpenStreetMap.
+map.on('load', function() {
+    // Insert the layer beneath any symbol layer.
+    var layers = map.getStyle().layers;
+
+    var labelLayerId;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+            labelLayerId = layers[i].id;
+            break;
+        }
+    }
+
+    // search input
+    var geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken
+    });
+    document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
+
+    // FullscreenControl
+    map.addControl(new mapboxgl.FullscreenControl());
+
+    // Add zoom and rotation controls to the map.
+    map.addControl(new mapboxgl.NavigationControl());
+
+    //data for Point
+    map.addSource('accidents', {
+        "type": "geojson",
+        "data": "./convertcsv.geojson"
+    });    
+
+    // 3D building
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': '#aaa',
+
+            // use an 'interpolate' expression to add a smooth transition effect to the
+            // buildings as the user zooms in
+            'fill-extrusion-height': [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0,
+                15.05, ["get", "height"]
+            ],
+            'fill-extrusion-base': [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0,
+                15.05, ["get", "min_height"]
+            ],
+            'fill-extrusion-opacity': .6
+        }
+    }, labelLayerId);
+
+
+    // Point
+    map.addLayer({
+        "id": "Point",
+        "type": "circle",
+        "source": "accidents",
+        // "minzoom": 11,
+        "paint": {
+            'circle-radius': [
+                'interpolate',
+                ['linear'],
+                ['number', ['get', 'Casualty']],
+                    0, 0.1,
+                    5, 24
+            ],
+            'circle-color': [
+                'interpolate',
+                ['linear'],
+                ['number', ['get', 'Casualty']],
+                    0, '#2DC4B2',
+                    1, '#3BB3C3',
+                    2, '#669EC4',
+                    3, '#8B88B6',
+                    4, '#A2719B',
+                    5, '#AA5E79'
+            ],
+            'circle-opacity': 0.3,
+            // 'circle-blur': 2,
+        }
+    }, 'admin-2-boundaries-dispute');
+
+    //click on tree to view Casualty in a popup
+    map.on('click', 'Point', function (e) {
+        new mapboxgl.Popup()
+            .setLngLat(e.features[0].geometry.coordinates)
+            .setHTML('<b>月份 Month:</b> '+ e.features[0].properties.Month + 
+                     '月<br><b>死亡 Death:</b> '+ e.features[0].properties.Killed +
+                     '人<br><b>受傷 Injured:</b> '+ e.features[0].properties.Injured + 
+                     '人<br><b>死傷總和 Casualty:</b> '+ e.features[0].properties.Casualty + '人')
+            .addTo(map);
+    });
+
+});
+</script>
+
+</body>
+</html>
